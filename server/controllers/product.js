@@ -11,19 +11,15 @@ class ProductController {
                 })
             })
             .catch(err => {
-                res.status(400).json({
-                    code: 400,
+                res.status(404).json({
+                    code: 404,
                     message: err.message
                 })
             })
     }
 
     static getOne(req, res, next) {
-        product.findAll({
-                where: {
-                    id: req.params.id
-                }
-            })
+        product.findByPk(req.params.id)
             .then(data => {
                 res.status(200).json({
                     code: 200,
@@ -31,8 +27,8 @@ class ProductController {
                 })
             })
             .catch(err => {
-                res.status(400).json({
-                    status: 400,
+                res.status(404).json({
+                    status: 404,
                     message: err.message
                 })
             })
@@ -54,8 +50,8 @@ class ProductController {
                 })
             })
             .catch(err => {
-                res.status(401).json({
-                    code: 401,
+                res.status(400).json({
+                    code: 400,
                     message: err.message
                 })
             })
@@ -63,50 +59,70 @@ class ProductController {
 
 
     static update(req, res, next) {
-        let updateFile = {
-            name: req.body.name,
-            price: req.body.price,
-            stock: req.body.stock,
-            description: req.body.description
+        console.log(req.body.description, '<<<<')
+        if ((req.body.description == '') || (req.body.stock == '') || (req.body.price == '') || (req.body.name == '')) {
+            throw new Error(res.status(404).json({
+                code: 404,
+                message: 'fields cannot be empty'
+            }))
+        } else {
+            let updateFile = {
+                name: req.body.name,
+                price: req.body.price,
+                stock: req.body.stock,
+                description: req.body.description
+            }
+
+            product.update(updateFile, {
+                    where: {
+                        id: req.params.id
+                    }
+                })
+                .then(data => {
+                    res.status(200).json({
+                        code: 200,
+                        data
+                    })
+                })
+                .catch(err => {
+                    res.status(404).json({
+                        code: 404,
+                        message: err.message
+                    })
+                })
+
+
         }
-
-        product.update(updateFile, {
-                where: {
-                    id: req.params.id
-                }
-            })
-            .then(data => {
-                res.status(200).json({
-                    code: 200,
-                    data
-                })
-            })
-            .catch(err => {
-                res.status(401).json({
-                    code: 401,
-                    message: err.message
-                })
-            })
-
 
     }
 
     static delete(req, res, next) {
-        product.destroy({
-                where: {
-                    id: req.params.id
+        product.findByPk(req.params.id)
+            .then(data => {
+                if (data == null) {
+                    throw new Error(res.status(404).json({
+                        code: 404,
+                        message: 'data does not exist'
+                    }))
+                } else {
+                    return product.destroy({
+                        where: {
+                            id: req.params.id
+                        }
+                    })
+
                 }
             })
-            .then(data => {
+            .then(data1 => {
                 console.log('berhasil')
                 res.status(200).json({
                     code: 200,
-                    data
+                    data1
                 })
             })
-            .then(err => {
-                res.status(400).json({
-                    status: 400,
+            .catch(err => {
+                res.status(404).json({
+                    status: 404,
                     message: err.message
                 })
 
